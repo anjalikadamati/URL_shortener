@@ -2,21 +2,30 @@ from app import db
 from app.models.url_model import URL
 from app.utils.base62 import encode_base62
 from app.utils.redis_client import redis_client
+from datetime import datetime, timedelta
 
 
-def create_short_url(original_url):
+def create_short_url(original_url, expires_in=None):
 
     new_url = URL(original_url=original_url)
-
     db.session.add(new_url)
     db.session.commit()
 
     short_code = encode_base62(new_url.id)
-
     new_url.short_code = short_code
+
+    if expires_in:
+        new_url.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+
     db.session.commit()
 
+    if expires_in:
+        redis_client.setex(short_code, expires_in, original_url)
+    else:
+        redis_client.set(short_code, original_url)
+
     return short_code
+
 
 def get_original_url(short_code):
 
@@ -27,12 +36,15 @@ def get_original_url(short_code):
 
     url = URL.query.filter_by(short_code=short_code).first()
 
-    if url:
-        url.clicks += 1
-        db.session.commit()
+    if not url:
+        return None
 
-        redis_client.set(short_code, url.original_url)
+    if url.expires_at and url.expires_at < datetime.utcnow():
+        return None
 
-        return url.original_url
+    url.clicks += 1
+    db.session.commit()
 
-    return None
+    redis_client.set(short_code, url.original_url)
+
+    return url.original_url
