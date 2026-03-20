@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, redirect
 from app.services.url_service import create_short_url, get_original_url
 from app.utils.rate_limiter import check_rate_limit
+from app.models.url_model import URL
 
 url_bp = Blueprint("url", __name__)
 
@@ -20,7 +21,8 @@ def shorten_url():
     short_code = create_short_url(original_url, expires_in)
 
     return jsonify({
-        "short_url": f"http://localhost:5000/{short_code}"
+        "short_url": f"{request.host_url}{short_code}",
+        "original_url": original_url
     })
 
 
@@ -36,3 +38,23 @@ def redirect_url(short_code):
         return redirect(original_url)
 
     return jsonify({"error": "URL not found"}), 404
+
+
+@url_bp.route('/recent', methods=['GET'])
+def get_recent_links():
+    urls = URL.query.order_by(URL.created_at.desc()).limit(10).all()
+
+    base_url = request.host_url
+
+    result = []
+    for url in urls:
+        result.append({
+            "original": url.original_url,
+            "short": f"{base_url}{url.short_code}",
+            "clicks": url.clicks
+        })
+
+    return jsonify(result), 200
+
+
+

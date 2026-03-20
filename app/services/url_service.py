@@ -32,6 +32,10 @@ def get_original_url(short_code):
     cached_url = redis_client.get(short_code)
 
     if cached_url:
+        url = URL.query.filter_by(short_code=short_code).first()
+        if url:
+            url.clicks += 1
+            db.session.commit()
         return cached_url
 
     url = URL.query.filter_by(short_code=short_code).first()
@@ -43,8 +47,11 @@ def get_original_url(short_code):
         return None
 
     url.clicks += 1
+
+    redis_client.incr(f"clicks:{short_code}")
+
     db.session.commit()
 
-    redis_client.set(short_code, url.original_url)
+    redis_client.setex(short_code,3600, url.original_url)
 
     return url.original_url
