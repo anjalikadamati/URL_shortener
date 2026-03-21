@@ -1,8 +1,9 @@
 import time
 from sqlalchemy import create_engine
+import os
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:root@mysql:3306/url_shortener"
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 

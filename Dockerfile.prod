@@ -7,11 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Install nginx
 RUN apt-get update && apt-get install -y nginx
 
-# Copy nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Start both nginx + gunicorn
+EXPOSE 80
+
 CMD service nginx start && gunicorn -w 4 -b 0.0.0.0:5000 app:app
