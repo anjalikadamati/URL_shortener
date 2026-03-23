@@ -5,8 +5,11 @@ from app.models.url_model import URL
 
 url_bp = Blueprint("url", __name__)
 
+
 @url_bp.route("/shorten", methods=["POST"])
 def shorten_url():
+
+    BASE_URL="https://url-shortener-02nx.onrender.com"
 
     if not check_rate_limit():
         return jsonify({"error": "Too many requests"}), 429
@@ -21,7 +24,7 @@ def shorten_url():
     short_code = create_short_url(original_url, expires_in)
 
     return jsonify({
-        "short_url": f"{request.host_url}{short_code}",
+        "short_url": f"{BASE_URL}{short_code}",
         "original_url": original_url
     })
 
@@ -44,13 +47,13 @@ def redirect_url(short_code):
 def get_recent_links():
     urls = URL.query.order_by(URL.created_at.desc()).limit(10).all()
 
-    base_url = request.host_url
+    BASE_URL="https://url-shortener-02nx.onrender.com"
 
     result = []
     for url in urls:
         result.append({
             "original": url.original_url,
-            "short": f"{base_url}{url.short_code}",
+            "short": f"{BASE_URL}{url.short_code}",
             "clicks": url.clicks
         })
 
