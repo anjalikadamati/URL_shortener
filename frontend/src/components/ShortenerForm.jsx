@@ -6,6 +6,7 @@ function ShortenerForm({ onShorten }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+
   const handleSubmit = async () => {
     setError('');
 
@@ -24,7 +25,7 @@ function ShortenerForm({ onShorten }) {
     setShortUrl('');
 
     try {
-      const res = await fetch('/shorten', {
+      const res = await fetch("https://url-shortener-02nx.onrender.com/shorten", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: url.trim() })

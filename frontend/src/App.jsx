@@ -8,9 +8,10 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
   const fetchLinks = async () => {
     try {
-      const res = await fetch('/api/recent');
+      const res = await fetch("https://url-shortener-02nx.onrender.com/recent");
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = await res.json();
       setRecentLinks(data);
