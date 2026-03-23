@@ -27,7 +27,7 @@ def create_short_url(original_url, expires_in=None):
     return short_code
 
 
-USE_CACHE = True  # change this to False to disable Redis
+USE_CACHE = False # change this to False to disable Redis
 
 def get_original_url(short_code):
     # Try cache
