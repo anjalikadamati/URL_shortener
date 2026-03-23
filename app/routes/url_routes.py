@@ -24,7 +24,7 @@ def shorten_url():
     short_code = create_short_url(original_url, expires_in)
 
     return jsonify({
-        "short_url": f"{BASE_URL}{short_code}",
+        "short_url": f"{BASE_URL}/{short_code}",
         "original_url": original_url
     })
 
@@ -53,7 +53,7 @@ def get_recent_links():
     for url in urls:
         result.append({
             "original": url.original_url,
-            "short": f"{BASE_URL}{url.short_code}",
+            "short": f"{BASE_URL}/{url.short_code}",
             "clicks": url.clicks
         })
 
