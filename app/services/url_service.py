@@ -27,31 +27,21 @@ def create_short_url(original_url, expires_in=None):
     return short_code
 
 
+USE_CACHE = True  # change this to False to disable Redis
+
 def get_original_url(short_code):
+    # Try cache
+    if USE_CACHE:
+        cached = redis_client.get(short_code)
+        if cached:
+            return cached.decode('utf-8')
 
-    cached_url = redis_client.get(short_code)
-
-    if cached_url:
-        url = URL.query.filter_by(short_code=short_code).first()
-        if url:
-            url.clicks += 1
-            db.session.commit()
-        return cached_url
-
+    # DB fetch
     url = URL.query.filter_by(short_code=short_code).first()
 
-    if not url:
-        return None
+    if url:
+        if USE_CACHE:
+            redis_client.set(short_code, url.original_url, ex=3600)
+        return url.original_url
 
-    if url.expires_at and url.expires_at < datetime.utcnow():
-        return None
-
-    url.clicks += 1
-
-    redis_client.incr(f"clicks:{short_code}")
-
-    db.session.commit()
-
-    redis_client.setex(short_code,3600, url.original_url)
-
-    return url.original_url
+    return None
